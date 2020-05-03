@@ -8,7 +8,7 @@
 
   <body>
     <div id="app">
-      <form action="generate_pdf.php" method="post">
+      <form @submit="submit" action="generate_pdf.php" method="post">
         Select Template:
 
         <br />
@@ -26,7 +26,11 @@
           {{ input.name }}:
 
           <div v-if="input.type === 'text' || input.type === 'number'">
-            <input :type="input.type" :name="input.name" />
+            <input
+              :type="input.type"
+              :name="input.name"
+              v-model="input.finalValue"
+            />
           </div>
 
           <div v-else-if="input.type === 'radio'">
@@ -172,6 +176,28 @@
                 }),
               },
             };
+          },
+
+          submit(event) {
+            if (this.form.settings.output) {
+              event.preventDefault();
+            } else {
+              return false;
+            }
+
+            var form = new FormData(event.srcElement);
+
+            const win = window.open("output/", "_blank");
+
+            fetch("generate_pdf.php", {
+              method: "POST",
+              body: form,
+            })
+              .then((response) => response.json())
+              .then((body) => {
+                win.location.href = body.filename;
+                event.srcElement.reset();
+              });
           },
         },
       });

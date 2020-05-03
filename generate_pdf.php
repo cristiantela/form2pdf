@@ -14,7 +14,7 @@ foreach ($attributes as $attribute) {
   $data[$attribute] = $_POST[str_replace(' ', '_', $attribute)];
 }
 
-$data['Timestamp'] = "Timestamp";
+$data['Timestamp'] = date("d/m/Y");
 
 require_once __DIR__ . '/vendor/autoload.php';
 
@@ -35,12 +35,26 @@ if (file_exists($footerFileName)) {
   $mpdf->SetHTMLFooter(file_get_contents($footerFileName));
 }
 
-$template = file_get_contents("templates/$template/content.html");
+$content = file_get_contents("templates/$template/content.html");
+$outputFilename = isset($settings["output"]) ? $settings["output"] : "";
 
 foreach ($data as $attribute => $value) {
-  $template = str_replace("{{{$attribute}}}", $value, $template);
+  $content = str_replace("{{{$attribute}}}", $value, $content);
+  $outputFilename = str_replace("{{{$attribute}}}", $value, $outputFilename);
 }
 
-$mpdf->WriteHTML($template);
+$mpdf->WriteHTML($content);
 
-$mpdf->Output();
+if ($outputFilename !== "") {
+  if (!file_exists("output/$template/")) {
+    mkdir("output/$template/");
+  }
+
+  $outputFilename = "output/$template/$outputFilename.pdf";
+
+  $mpdf->Output($outputFilename, \Mpdf\Output\Destination::FILE);
+
+  echo json_encode([ 'filename' => $outputFilename, ]);
+} else {
+  $mpdf->Output();
+}
