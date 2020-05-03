@@ -1,0 +1,30 @@
+{
+  "title": "Example Title",
+  "description": "This is a description",
+  "form": [
+    {
+      "type": "text",
+      "name": "Your name"
+    },
+    {
+      "type": "number",
+      "name": "Your age"
+    },
+    {
+      "type": "radio",
+      "name": "Is this cool?",
+      "options": ["Yes", "Of course"]
+    },
+    {
+      "type": "radio",
+      "name": "What is your gender?",
+      "options": ["Female", "Male"],
+      "other": true
+    },
+    {
+      "type": "checkbox",
+      "name": "What in these things do you like?",
+      "options": ["Games", "TV Shows", "Movies"]
+    }
+  ]
+}

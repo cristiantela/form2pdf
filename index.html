@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Form PDF</title>
+  </head>
+
+  <body>
+    <div id="app">
+      <form action="generate_pdf.php" method="post">
+        Select Template:
+
+        <br />
+
+        <select @change="loadForm" name="template" v-model="selectedForm">
+          <option v-for="template in templates">{{ template }}</option>
+        </select>
+
+        <div>
+          <h1>{{ form.settings.title }}</h1>
+          <p>{{ form.settings.description }}</p>
+        </div>
+
+        <div v-for="(input, index) in form.settings.form" :key="index">
+          {{ input.name }}:
+
+          <div v-if="input.type === 'text' || input.type === 'number'">
+            <input :type="input.type" :name="input.name" />
+          </div>
+
+          <div v-else-if="input.type === 'radio'">
+            <label v-for="option in input.options" :key="option">
+              <input
+                v-model="input.value"
+                @change="input.finalValue = input.value"
+                type="radio"
+                :value="option"
+              />
+              {{ option }}
+              <br />
+            </label>
+
+            <label v-if="input.other">
+              <input
+                v-model="input.value"
+                @change="input.finalValue = ''"
+                type="radio"
+                :value="'#other'"
+              />
+              Outro
+              <br />
+            </label>
+
+            <input
+              type="text"
+              :name="input.name"
+              v-model="input.finalValue"
+              :style="{display: input.value !== '#other' ? 'none' : null}"
+            />
+          </div>
+
+          <div v-else-if="input.type === 'checkbox'">
+            <label v-for="(option, index) in input.options" :key="index">
+              <input
+                v-model="option.value"
+                type="checkbox"
+                :value="option.name"
+                @change="input.finalValue = input.options.filter(option => option.value).map(option => option.name)"
+              />
+              {{ option.name }}
+              <br />
+            </label>
+
+            <input
+              type="text"
+              :name="input.name"
+              :value="input.finalValue.join ? input.finalValue.join(', ') : ''"
+              style="display: none;"
+            />
+          </div>
+        </div>
+
+        <button type="submit">Enviar</button>
+      </form>
+    </div>
+
+    <script src="js/vue.js"></script>
+    <script>
+      var app = new Vue({
+        el: "#app",
+        data: {
+          templates: [],
+          forms: [],
+          selectedForm: "",
+          form: {
+            settings: {
+              form: [],
+            },
+          },
+        },
+
+        created() {
+          fetch("settings.json")
+            .then((response) => response.json())
+            .then((body) => {
+              this.templates = body.templates;
+
+              if (this.templates.length) {
+                this.selectedForm = this.templates[0];
+              }
+
+              this.templates.forEach((template) => {
+                fetch(`templates/${template}/index.json`)
+                  .then((response) => response.json())
+                  .then((body) => {
+                    this.forms.push({
+                      name: template,
+                      settings: body,
+                    });
+
+                    if (template === this.selectedForm) {
+                      this.loadForm();
+                    }
+                  });
+              });
+            });
+        },
+
+        methods: {
+          loadForm() {
+            const notFound = {
+              settings: {
+                form: [],
+              },
+            };
+
+            if (!this.selectedForm) {
+              this.form = notFound;
+              return false;
+            }
+
+            const form = this.forms.find(
+              (form) => form.name === this.selectedForm
+            );
+
+            if (!form) {
+              this.form = notFound;
+              return false;
+            }
+
+            this.form = {
+              ...form,
+              settings: {
+                ...form.settings,
+                form: form.settings.form.map((input) => {
+                  let options = input.options;
+
+                  if (input.type === "checkbox") {
+                    options = options.map((option) => ({
+                      name: option,
+                      value: false,
+                    }));
+                  }
+
+                  return {
+                    ...input,
+                    options,
+                    value: "",
+                    finalValue: "",
+                  };
+                }),
+              },
+            };
+          },
+        },
+      });
+    </script>
+  </body>
+</html>

@@ -1,0 +1,13 @@
+{
+    "name": "cristiantela/form-pdf",
+    "type": "project",
+    "require": {
+        "mpdf/mpdf": "^8.0"
+    },
+    "authors": [
+        {
+            "name": "Matheus Cristian",
+            "email": "mathues@email.com"
+        }
+    ]
+}
