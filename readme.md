@@ -26,6 +26,8 @@ It is needed you to have [composer](https://getcomposer.org/) to install the req
 
 To create a new template, just create a folder with the name of your template on the folder `templates`. Inside this folder, you must obtain the files `index.json` (with your configurations), and `content.html` (you can provide the `header.html` and `footer.html` files too).
 
+Remember to insert the name of the template in the `settings.json` in `templates` array.
+
 In your `index.json`, should contain a json with this structure:
 
 ```json
